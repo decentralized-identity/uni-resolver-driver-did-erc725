@@ -18,7 +18,7 @@
   </scm>
 	<distributionManagement>
 		<repository>
-			<id>github</id>
+			<id>github-erc275</id>
 			<name>GitHub decentralized-identity uni-resolver-driver-did-erc725</name>
 			<url>https://maven.pkg.github.com/decentralized-identity/uni-resolver-driver-did-erc725</url>
 		</repository>
