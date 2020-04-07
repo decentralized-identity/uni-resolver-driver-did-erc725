@@ -7,7 +7,7 @@ MAINTAINER Markus Sabadello <markus@danubetech.com>
 
 ADD . /opt/driver-did-erc725
 
-RUN cd /opt/driver-did-erc725 && mvn clean install package -N -DskipTests
+RUN cd /opt/driver-did-erc725 && mvn --settings settings.xml clean install package -N -DskipTests
 
 # variables
 
