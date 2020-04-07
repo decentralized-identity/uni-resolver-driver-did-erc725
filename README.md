@@ -17,6 +17,10 @@ did:erc725:ropsten:2F2B37C890824242Cb9B0FE5614fA2221B79901E
 
 ## Configuration
 For downloading the dependencies of this project a Personal Access Token for GitHub must be configured in file [settings.xml](https://github.com/decentralized-identity/uni-resolver-driver-did-erc725/blob/release-0.1.x/settings.xml) according to [Creating a personal access token for the command line](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line).
+Then, add the USER Name and TOKEN to the environment variable as follows,
+
+    GITHUB_READ_PACKAGES_OWNER=OWNER
+    GITHUB_READ_PACKAGES_TOKEN=TOKEN
  
 ## Build and Run (Docker)
 

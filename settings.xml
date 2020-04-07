@@ -19,9 +19,9 @@
   </profiles>
   <servers>
     <server>
-      <id>github-ur</id>
-      <username>OWNER</username>
-      <password>TOKEN</password>
+        <id>github-ur</id>
+        <username>${env.GITHUB_READ_PACKAGES_OWNER}</username>
+        <password>${env.GITHUB_READ_PACKAGES_TOKEN}</password>
     </server>
   </servers>
 </settings>
