@@ -1,23 +1,12 @@
 package uniresolver.driver.did.erc725;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import foundation.identity.did.Authentication;
+import foundation.identity.did.DIDDocument;
+import foundation.identity.did.Service;
+import foundation.identity.did.VerificationMethod;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import did.Authentication;
-import did.DIDDocument;
-import did.PublicKey;
-import did.Service;
 import uniresolver.ResolutionException;
 import uniresolver.driver.Driver;
 import uniresolver.driver.did.erc725.ethereumconnection.EthereumConnection;
@@ -25,6 +14,12 @@ import uniresolver.driver.did.erc725.ethereumconnection.HybridEthereumConnection
 import uniresolver.driver.did.erc725.ethereumconnection.JsonRPCEthereumConnection;
 import uniresolver.driver.did.erc725.ethereumconnection.result.ERC725Keys;
 import uniresolver.result.ResolveResult;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DidErc725Driver implements Driver {
 
@@ -184,10 +179,10 @@ public class DidErc725Driver implements Driver {
 
 		String id = identifier;
 
-		// DID DOCUMENT publicKeys
+		// DID DOCUMENT verificationMethods
 
 		int keyNum = 0;
-		List<PublicKey> publicKeys = new ArrayList<PublicKey> ();
+		List<VerificationMethod> verificationMethods = new ArrayList<VerificationMethod> ();
 		List<Authentication> authentications = new ArrayList<Authentication> ();
 
 		if (keys != null) {
@@ -196,18 +191,26 @@ public class DidErc725Driver implements Driver {
 
 				String keyId = id + "#key-" + (++keyNum);
 
-				PublicKey publicKey = PublicKey.build(keyId, DIDDOCUMENT_PUBLICKEY_TYPES, null, null, Hex.encodeHexString(managementKey), null);
-				publicKeys.add(publicKey);
+				VerificationMethod verificationMethod = VerificationMethod.builder()
+						.id(URI.create(keyId))
+						.publicKeyHex(Hex.encodeHexString(managementKey))
+						.build();
+				verificationMethods.add(verificationMethod);
 			}
 
 			for (byte[] actionKey : keys.getActionKeys()) {
 
 				String keyId = id + "#key-" + (++keyNum);
 
-				PublicKey publicKey = PublicKey.build(keyId, DIDDOCUMENT_PUBLICKEY_TYPES, null, null, Hex.encodeHexString(actionKey), null);
-				publicKeys.add(publicKey);
+				VerificationMethod verificationMethod = VerificationMethod.builder()
+						.id(URI.create(keyId))
+						.publicKeyHex(Hex.encodeHexString(actionKey))
+						.build();
+				verificationMethods.add(verificationMethod);
 
-				Authentication authentication = Authentication.build(null, DIDDOCUMENT_AUTHENTICATION_TYPES, keyId);
+				Authentication authentication = Authentication.builder()
+						.verificationMethod(URI.create(keyId))
+						.build();
 				authentications.add(authentication);
 			}
 
@@ -215,15 +218,20 @@ public class DidErc725Driver implements Driver {
 
 				String keyId = id + "#key-" + (++keyNum);
 
-				PublicKey publicKey = PublicKey.build(keyId, DIDDOCUMENT_PUBLICKEY_TYPES, null, null, Hex.encodeHexString(claimKey), null);
-				publicKeys.add(publicKey);
+				VerificationMethod verificationMethod = VerificationMethod.builder()
+						.id(URI.create(keyId))
+						.publicKeyHex(Hex.encodeHexString(claimKey))
+						.build();
+				verificationMethods.add(verificationMethod);
 
-				Authentication authentication = Authentication.build(null, DIDDOCUMENT_AUTHENTICATION_TYPES, keyId);
+				Authentication authentication = Authentication.builder()
+						.verificationMethod(URI.create(keyId))
+						.build();
 				authentications.add(authentication);
 			}
 		} else {
 
-			publicKeys = Collections.emptyList();
+			verificationMethods = Collections.emptyList();
 			authentications = Collections.emptyList();
 		}
 
@@ -233,7 +241,12 @@ public class DidErc725Driver implements Driver {
 
 		// create DID DOCUMENT
 
-		DIDDocument didDocument = DIDDocument.build(id, publicKeys, authentications, services);
+		DIDDocument didDocument = DIDDocument.builder()
+				.id(URI.create(id))
+				.verificationMethods(verificationMethods)
+				.authentications(authentications)
+				.services(services)
+				.build();
 
 		// create METHOD METADATA
 
@@ -242,7 +255,7 @@ public class DidErc725Driver implements Driver {
 
 		// create RESOLVE RESULT
 
-		ResolveResult resolveResult = ResolveResult.build(didDocument, null, DIDDocument.MIME_TYPE, null, methodMetadata);
+		ResolveResult resolveResult = ResolveResult.build(didDocument, null, DIDDocument.MIME_TYPE_JSON_LD, null, methodMetadata);
 
 		// done
 
