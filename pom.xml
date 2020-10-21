@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>decentralized-identity</groupId>
 		<artifactId>uni-resolver</artifactId>
-		<version>0.1.0</version>
+		<version>0.3-SNAPSHOT</version>
 	</parent>
 
 	<repositories>
@@ -49,10 +49,6 @@
 							<jettyConfig>
 								${basedir}/src/test/resources/jetty.xml
 							</jettyConfig>
-							<jettyEnvXml>
-								${basedir}/src/test/resources/jetty-env.xml
-							</jettyEnvXml>
-							<contextPath>/</contextPath>
 							<useTestClasspath>true</useTestClasspath>
 							<systemProperties>
 								<systemProperty>
@@ -64,35 +60,19 @@
 									<value>true</value>
 								</systemProperty>
 								<systemProperty>
-									<name>log4j.configuration</name>
-									<value>file:${basedir}/src/test/resources/log4j.properties</value>
+									<name>log4j2.configurationFile</name>
+									<value>file:${basedir}/src/test/resources/log4j2-test.properties</value>
 								</systemProperty>
 							</systemProperties>
 							<webApp>
+								<contextPath>/</contextPath>
+								<jettyEnvXml>
+									${basedir}/src/test/resources/jetty-env.xml
+								</jettyEnvXml>
 								<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
 								<containerIncludeJarPattern>^$</containerIncludeJarPattern>
 							</webApp>
 						</configuration>
-						<dependencies>
-							<dependency>
-								<groupId>org.slf4j</groupId>
-								<artifactId>slf4j-api</artifactId>
-								<version>1.7.25</version>
-								<scope>compile</scope>
-							</dependency>
-							<dependency>
-								<groupId>org.slf4j</groupId>
-								<artifactId>jcl-over-slf4j</artifactId>
-								<version>1.7.25</version>
-								<scope>compile</scope>
-							</dependency>
-							<dependency>
-								<groupId>org.slf4j</groupId>
-								<artifactId>slf4j-log4j12</artifactId>
-								<version>1.7.25</version>
-								<scope>compile</scope>
-							</dependency>
-						</dependencies>
 					</plugin>
 				</plugins>
 			</build>
@@ -103,10 +83,18 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>decentralized-identity</groupId>
 			<artifactId>uni-resolver-driver</artifactId>
-			<version>0.1.0</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.web3j</groupId>
