@@ -1,6 +1,6 @@
 package uniresolver.driver.did.erc725;
 
-import foundation.identity.did.Authentication;
+import foundation.identity.did.DID;
 import foundation.identity.did.DIDDocument;
 import foundation.identity.did.Service;
 import foundation.identity.did.VerificationMethod;
@@ -146,11 +146,11 @@ public class DidErc725Driver implements Driver {
 	}
 
 	@Override
-	public ResolveResult resolve(String identifier) throws ResolutionException {
+	public ResolveResult resolve(DID did, Map<String, Object> resolveOptions) throws ResolutionException {
 
 		// parse identifier
 
-		Matcher matcher = DID_ERC725_PATTERN.matcher(identifier);
+		Matcher matcher = DID_ERC725_PATTERN.matcher(did.getDidString());
 		if (! matcher.matches()) return null;
 
 		String network = matcher.groupCount() == 2 ? matcher.group(1) : null;
@@ -175,24 +175,20 @@ public class DidErc725Driver implements Driver {
 
 		if (log.isDebugEnabled()) log.debug("Retrieved keys for address " + address + " on network " + network + ": " + keys);
 
-		// DID DOCUMENT id
-
-		String id = identifier;
-
 		// DID DOCUMENT verificationMethods
 
 		int keyNum = 0;
 		List<VerificationMethod> verificationMethods = new ArrayList<VerificationMethod> ();
-		List<Authentication> authentications = new ArrayList<Authentication> ();
+		List<VerificationMethod> authentications = new ArrayList<VerificationMethod> ();
 
 		if (keys != null) {
 
 			for (byte[] managementKey : keys.getManagementKeys()) {
 
-				String keyId = id + "#key-" + (++keyNum);
+				URI keyId = URI.create(did + "#key-" + (++keyNum));
 
 				VerificationMethod verificationMethod = VerificationMethod.builder()
-						.id(URI.create(keyId))
+						.id(keyId)
 						.publicKeyHex(Hex.encodeHexString(managementKey))
 						.build();
 				verificationMethods.add(verificationMethod);
@@ -200,32 +196,32 @@ public class DidErc725Driver implements Driver {
 
 			for (byte[] actionKey : keys.getActionKeys()) {
 
-				String keyId = id + "#key-" + (++keyNum);
+				URI keyId = URI.create(did + "#key-" + (++keyNum));
 
 				VerificationMethod verificationMethod = VerificationMethod.builder()
-						.id(URI.create(keyId))
+						.id(keyId)
 						.publicKeyHex(Hex.encodeHexString(actionKey))
 						.build();
 				verificationMethods.add(verificationMethod);
 
-				Authentication authentication = Authentication.builder()
-						.verificationMethod(URI.create(keyId))
+				VerificationMethod authentication = VerificationMethod.builder()
+						.id(keyId)
 						.build();
 				authentications.add(authentication);
 			}
 
 			for (byte[] claimKey : keys.getClaimKeys()) {
 
-				String keyId = id + "#key-" + (++keyNum);
+				URI keyId = URI.create(did + "#key-" + (++keyNum));
 
 				VerificationMethod verificationMethod = VerificationMethod.builder()
-						.id(URI.create(keyId))
+						.id(keyId)
 						.publicKeyHex(Hex.encodeHexString(claimKey))
 						.build();
 				verificationMethods.add(verificationMethod);
 
-				Authentication authentication = Authentication.builder()
-						.verificationMethod(URI.create(keyId))
+				VerificationMethod authentication = VerificationMethod.builder()
+						.id(keyId)
 						.build();
 				authentications.add(authentication);
 			}
@@ -242,20 +238,20 @@ public class DidErc725Driver implements Driver {
 		// create DID DOCUMENT
 
 		DIDDocument didDocument = DIDDocument.builder()
-				.id(URI.create(id))
+				.id(did.toUri())
 				.verificationMethods(verificationMethods)
-				.authentications(authentications)
+				.authenticationVerificationMethods(authentications)
 				.services(services)
 				.build();
 
 		// create METHOD METADATA
 
-		Map<String, Object> methodMetadata = new LinkedHashMap<String, Object> ();
-		if (keys != null) methodMetadata.put("keys", keys.toJsonMap());
+		Map<String, Object> didDocumentMetadata = new LinkedHashMap<String, Object> ();
+		if (keys != null) didDocumentMetadata.put("keys", keys.toJsonMap());
 
 		// create RESOLVE RESULT
 
-		ResolveResult resolveResult = ResolveResult.build(didDocument, null, DIDDocument.MIME_TYPE_JSON_LD, null, methodMetadata);
+		ResolveResult resolveResult = ResolveResult.build(null, didDocument, null, didDocumentMetadata);
 
 		// done
 
